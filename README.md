@@ -15,7 +15,7 @@ Our analysis focuses on how these metrics change as a function of the **Number o
 
 Click the button below to launch the project's analysis code in a cloud-based Jupyter environment. No local installation is required.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Bokheart/3440Project/main?urlpath=file%2Fsrc%2Fplot_results.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Bokheart/3440Project/main?urlpath=lab)
 
 **Note:** If your analysis file is a Python script (`.py`), please ensure the file path in the Binder link (`urlpath=...`) is correct.
 
