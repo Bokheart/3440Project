@@ -4,28 +4,24 @@
 
 This project provides an experimental comparison of two major approaches to solving the classic **0/1 Knapsack Problem (KP)**: the exact **Dynamic Programming (DP)** algorithm and the heuristic **Greedy Algorithm**.
 
-The core objective is to analyze algorithm performance across key metrics:
-1.  **Solution Quality:** Measured by the Optimality Gap.
-2.  **Computational Efficiency:** Measured by Runtime (seconds).
-3.  **Resource Consumption:** Measured by Memory Usage (KB).
-
-Our analysis focuses on how these metrics change as a function of the **Number of Items ($N$)** and the **Knapsack Capacity ($W$)**.
+The analysis focuses on the trade-offs between **Solution Quality** (Optimality Gap), **Computational Efficiency** (Runtime), and **Resource Consumption** (Memory Usage) across different scales ($N$ items) and constraints ($W$ capacity).
 
 ## ▶️ Quick Launch (Run on Binder)
 
-Click the button below to launch the project's analysis code in a cloud-based Jupyter environment. No local installation is required.
+Click the button below to launch the project's analysis code in a cloud-based JupyterLab environment. No local installation is required.
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Bokheart/3440Project/main?urlpath=lab)
-
-**Note:** If your analysis file is a Python script (`.py`), please ensure the file path in the Binder link (`urlpath=...`) is correct.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Bokheart/3440Project/main?urlpath=lab/tree/src/plot_results.ipynb)
 
 ### How to Run
 
 1.  Click the **Binder badge** above.
-2.  Wait for the environment to build and launch.
-3.  Once the JupyterLab interface opens, open the analysis file (e.g., `src/plot_results.ipynb`).
-4.  Run all cells to automatically read the data, perform calculations, and generate all comparison charts.
+2.  Wait for the environment to build and launch (the JupyterLab interface will open).
+3.  The file `src/plot_results.ipynb` should automatically open.
+4.  Execute all cells in the Notebook sequentially to:
+    * Read the CSV data from `data/results/`.
+    * Calculate the Optimality Gap.
+    * Generate and save the six comparison charts in the project directory.
 
 ## 📁 Repository Structure
 
-The project follows a standard structure to organize code and data:
+The project structure ensures proper relative path handling in the Notebook:
