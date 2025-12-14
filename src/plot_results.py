@@ -3,24 +3,31 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # --- 1. Set Plotting Style ---
-# ... (其他代码保持不变)
+sns.set_theme(style="whitegrid")
+# Set default figure size and font size
+plt.rcParams.update({'font.size': 12, 'figure.figsize': (8, 5)})
+
+# Define colors and markers
+STYLE_DP = {'color': 'blue', 'marker': 'o', 'label': 'Exact (DP)'}
+STYLE_GREEDY = {'color': 'orange', 'marker': 's', 'label': 'Greedy'}
+STYLE_GAP = {'color': 'red', 'marker': 'D', 'linestyle': '-', 'linewidth': 2, 'markersize': 8, 'label': 'Optimality Gap (%)'}
 
 # --- 2. Read Data from CSV Files ---
 
 # Dataset 1: Changes with Number of Items (n_items)
-# Corresponding file path: ../data/results/Exact_Baseline_Summary_Final.csv
+# Corresponding file: Exact_Baseline_Summary_Final.csv
 try:
-    # Use relative path to access data in the 'data/results' folder
+    # FIX: Using relative path to access data in the 'data/results' folder
     df_baseline = pd.read_csv('../data/results/Exact_Baseline_Summary_Final.csv')
     print("✅ Successfully read Exact_Baseline_Summary_Final.csv")
 except FileNotFoundError:
     print("❌ Error: Exact_Baseline_Summary_Final.csv not found. Check path: ../data/results/")
-    df_baseline = pd.DataFrame() 
+    df_baseline = pd.DataFrame() # Create empty DataFrame to prevent downstream errors
 
 # Dataset 2: Changes with Knapsack Capacity (W)
-# Corresponding file path: ../data/results/W_sensitivity_results.csv
+# Corresponding file: W_sensitivity_results.csv (fixed n=200)
 try:
-    # Use relative path to access data in the 'data/results' folder
+    # FIX: Using relative path to access data in the 'data/results' folder
     df_sensitivity = pd.read_csv('../data/results/W_sensitivity_results.csv')
     # Dynamically calculate Optimality Gap
     # Formula: Gap = (Exact_DP_Value - Greedy_Value) / Exact_DP_Value * 100
@@ -31,24 +38,6 @@ try:
     print("✅ Successfully read W_sensitivity_results.csv and calculated Optimality_Gap")
 except FileNotFoundError:
     print("❌ Error: W_sensitivity_results.csv not found. Check path: ../data/results/")
-    df_sensitivity = pd.DataFrame()
-
-# ... (后续的绘图函数和执行代码保持不变)
-
-# Dataset 2: Changes with Knapsack Capacity (W)
-# Corresponding file: W_sensitivity_results.csv (fixed n=200)
-try:
-    # Using relative path for GitHub/Jupyter portability
-    df_sensitivity = pd.read_csv('W_sensitivity_results.csv')
-    # Dynamically calculate Optimality Gap
-    # Formula: Gap = (Exact_DP_Value - Greedy_Value) / Exact_DP_Value * 100
-    df_sensitivity['Optimality_Gap'] = (
-        (df_sensitivity['Exact_DP_Value'] - df_sensitivity['Greedy_Value']) / 
-        df_sensitivity['Exact_DP_Value'] * 100
-    )
-    print("✅ Successfully read W_sensitivity_results.csv and calculated Optimality_Gap")
-except FileNotFoundError:
-    print("❌ Error: W_sensitivity_results.csv not found.")
     df_sensitivity = pd.DataFrame() # Create empty DataFrame to prevent downstream errors
 
 # --- 3. Plotting Function ---
@@ -70,6 +59,7 @@ def plot_comparison(df, x_col, y1_col, y2_col, title, x_label, y_label, save_nam
     # Save the figure
     plt.tight_layout()
     plt.savefig(save_name, dpi=300)
+    # In a Jupyter environment, we typically save the figure instead of using plt.show()
 
 # --- 4. Independent Function for Optimality Gap Plot ---
 def plot_optimality_gap(df, x_col, y_col, threshold, save_name):
@@ -153,5 +143,4 @@ if not df_sensitivity.empty:
     # 2.4 Optimality Gap vs Capacity (New Plot)
     plot_optimality_gap(df_sensitivity, 'W', 'Optimality_Gap', 20, 
                         'optimality_gap_vs_capacity.png')
-
     print("✅ Second set of plots (including Optimality Gap) generated and saved")
