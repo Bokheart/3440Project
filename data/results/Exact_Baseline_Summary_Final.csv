@@ -1,0 +1,7 @@
+Dataset,n_items,Capacity_W,Exact_DP_Value,Greedy_Value,Exact_Runtime_sec,Greedy_Runtime_sec,Exact_Memory_KB,Greedy_Memory_KB,Notes
+knapsack_instance_50,50,480,747,643,0.012778433,1.46E-05,215.765625,0.953125,OR-Library derived
+knapsack_instance_100,100,480,1524,1297,0.087564367,3.83E-05,695.3496094,1.953125,OR-Library derived
+knapsack_instance_150,150,480,1787,1615,0.050552267,7.31E-05,672.828125,6.8125,OR-Library derived
+knapsack_instance_200,200,480,1780,1544,0.062609033,9.21E-05,1014.711914,8.6640625,OR-Library derived
+knapsack_instance_300,300,480,2615,2594,0.1361701,0.000159685,1466.84082,12.70703125,OR-Library derived
+knapsack_instance_500,500,480,2560,2379,0.331747767,0.000325365,2257.692383,20.61328125,OR-Library derived

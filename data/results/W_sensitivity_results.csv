@@ -1,0 +1,6 @@
+Dataset,n,W,Exact_DP_Value,Greedy_Value,Exact_Runtime_sec,Greedy_Runtime_sec,Exact_Memory_KB,Greedy_Memory_KB
+datasets/knapsack_instance_200.csv,200,60,403,403,0.0018929,0.0001926,108.15625,5.9296875
+datasets/knapsack_instance_200.csv,200,120,680,527,0.0030479,0.0001204,204.34375,5.7421875
+datasets/knapsack_instance_200.csv,200,240,1060,949,0.0098165,0.0001706,413.53125,5.71875
+datasets/knapsack_instance_200.csv,200,360,1420,1280,0.0381018,0.0001665,633.78125,5.71875
+datasets/knapsack_instance_200.csv,200,480,1780,1544,0.0670627,0.0001572,860.46875,5.71875
