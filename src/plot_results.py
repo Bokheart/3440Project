@@ -1,58 +1,51 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
 
-# --- 1. CONFIGURATION AND FILE PATHS ---
-
-# Define file paths based on the new repository structure
-BASE_SUMMARY_PATH = 'data/results/Exact_Baseline_Summary_Final.csv' 
-SENSITIVITY_PATH = 'data/results/W_sensitivity_results.csv' 
-
-# Set up plotting style
+# --- 1. Set Plotting Style ---
 sns.set_theme(style="whitegrid")
+# Set default figure size and font size
 plt.rcParams.update({'font.size': 12, 'figure.figsize': (8, 5)})
 
-# Define common styles for DP and Greedy lines
+# Define colors and markers
 STYLE_DP = {'color': 'blue', 'marker': 'o', 'label': 'Exact (DP)'}
 STYLE_GREEDY = {'color': 'orange', 'marker': 's', 'label': 'Greedy'}
+STYLE_GAP = {'color': 'red', 'marker': 'D', 'linestyle': '-', 'linewidth': 2, 'markersize': 8, 'label': 'Optimality Gap (%)'}
 
+# --- 2. Read Data from CSV Files ---
 
-# --- 2. DATA LOADING ---
-
-def load_data(file_path):
-    """Safely loads data from a CSV file."""
-    try:
-        # Assuming the files are converted to CSV for simplicity and robust loading
-        df = pd.read_csv(file_path)
-        return df
-    except FileNotFoundError:
-        print(f"Error: Data file not found at {file_path}. Please check your repository structure.")
-        raise
-
-# Load the two main datasets
+# Dataset 1: Changes with Number of Items (n_items)
+# Corresponding file: Exact_Baseline_Summary_Final.csv
 try:
-    df_baseline = load_data(BASE_SUMMARY_PATH)
-    df_sensitivity = load_data(SENSITIVITY_PATH)
-except:
-    # Exit if data cannot be loaded, as the plots cannot be generated
-    exit() 
+    # Using relative path for GitHub/Jupyter portability
+    df_baseline = pd.read_csv('Exact_Baseline_Summary_Final.csv')
+    print("✅ Successfully read Exact_Baseline_Summary_Final.csv")
+except FileNotFoundError:
+    print("❌ Error: Exact_Baseline_Summary_Final.csv not found.")
+    df_baseline = pd.DataFrame() # Create empty DataFrame to prevent downstream errors
 
+# Dataset 2: Changes with Knapsack Capacity (W)
+# Corresponding file: W_sensitivity_results.csv (fixed n=200)
+try:
+    # Using relative path for GitHub/Jupyter portability
+    df_sensitivity = pd.read_csv('W_sensitivity_results.csv')
+    # Dynamically calculate Optimality Gap
+    # Formula: Gap = (Exact_DP_Value - Greedy_Value) / Exact_DP_Value * 100
+    df_sensitivity['Optimality_Gap'] = (
+        (df_sensitivity['Exact_DP_Value'] - df_sensitivity['Greedy_Value']) / 
+        df_sensitivity['Exact_DP_Value'] * 100
+    )
+    print("✅ Successfully read W_sensitivity_results.csv and calculated Optimality_Gap")
+except FileNotFoundError:
+    print("❌ Error: W_sensitivity_results.csv not found.")
+    df_sensitivity = pd.DataFrame() # Create empty DataFrame to prevent downstream errors
 
-# --- 3. DATA PROCESSING: CALCULATING THE CRITICAL GAP ---
-
-# Calculate Optimality Gap for the sensitivity analysis (W variation)
-# Gap (%) = (DP_Value - Greedy_Value) / DP_Value * 100
-df_sensitivity['Optimality_Gap'] = (df_sensitivity['Exact_DP_Value'] - df_sensitivity['Greedy_Value']) / df_sensitivity['Exact_DP_Value'] * 100
-
-
-# --- 4. PLOTTING FUNCTIONS ---
-
+# --- 3. Plotting Function ---
 def plot_comparison(df, x_col, y1_col, y2_col, title, x_label, y_label, save_name):
-    """Plots Runtime, Memory, or Value comparison between DP and Greedy."""
-    plt.figure()
+    # Use figsize to ensure consistent plot size
+    plt.figure(figsize=(8, 5))
     
-    # Plot two lines
+    # Plot the two lines
     plt.plot(df[x_col], df[y1_col], **STYLE_DP)
     plt.plot(df[x_col], df[y2_col], **STYLE_GREEDY)
     
@@ -63,79 +56,90 @@ def plot_comparison(df, x_col, y1_col, y2_col, title, x_label, y_label, save_nam
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
     
-    # Save image
+    # Save the figure
     plt.tight_layout()
     plt.savefig(save_name, dpi=300)
-    plt.close() # Close plot to free memory
 
+# --- 4. Independent Function for Optimality Gap Plot ---
+def plot_optimality_gap(df, x_col, y_col, threshold, save_name):
+    plt.figure(figsize=(8, 5))
 
-def plot_optimality_gap(df, save_name):
-    """Generates the critical Figure 7: Optimality Gap vs. Capacity."""
-    plt.figure()
-    
-    # Plot line, using red to highlight the gap
-    plt.plot(df['W'], df['Optimality_Gap'], 
-             color='red', marker='D', linestyle='-', linewidth=2, markersize=8, label='Optimality Gap (%)')
+    # Plot Gap line chart
+    plt.plot(df[x_col], df[y_col], **STYLE_GAP)
 
-    # Add 20% dashed line (the professor's critical threshold)
-    plt.axhline(y=20, color='gray', linestyle='--', alpha=0.7, label='Critical Threshold (20%)')
+    # Add critical threshold dashed line
+    plt.axhline(y=threshold, color='gray', linestyle='--', alpha=0.7, label=f'Critical Threshold ({threshold}%)')
 
-    # Annotate the highest point (W=120)
-    max_gap = df['Optimality_Gap'].max()
-    max_w = df.loc[df['Optimality_Gap'].idxmax(), 'W']
-    plt.annotate(f'Max Gap: {max_gap:.1f}%', 
-                 xy=(max_w, max_gap), 
-                 xytext=(max_w + 20, max_gap + 2),
-                 arrowprops=dict(facecolor='black', shrink=0.05))
+    # Annotate the highest point
+    if not df.empty:
+        max_gap = df[y_col].max()
+        max_w = df.loc[df[y_col].idxmax(), x_col]
+        # Optimize annotation position to avoid overlap
+        plt.annotate(f'Max Gap: {max_gap:.2f}%', 
+                     xy=(max_w, max_gap), 
+                     xytext=(max_w, max_gap + 5), # Offset upwards slightly
+                     ha='center', # Horizontal center alignment
+                     arrowprops=dict(facecolor='black', shrink=0.05, width=0.5, headwidth=8))
+
 
     # Set labels and title
-    plt.title('Weakness of Greedy Algorithm: Optimality Gap vs. Capacity', fontsize=14, fontweight='bold')
+    plt.title('Weakness of Greedy Algorithm: Optimality Gap vs. Capacity (W)', fontsize=14, fontweight='bold')
     plt.xlabel('Capacity (W)', fontsize=12)
     plt.ylabel('Optimality Gap (%)', fontsize=12)
-    plt.ylim(0, 30) # Fix y-axis range to make the 22.5% spike clear
+    # Dynamically set y-axis limits to ensure max point and threshold are visible
+    plt.ylim(0, max(max_gap + 10, threshold + 5)) 
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
 
-    # Save image
+    # Save the figure
     plt.tight_layout()
     plt.savefig(save_name, dpi=300)
-    plt.close()
 
 
-# --- 5. EXECUTION ---
+# ==========================================
+# First set of plots: Changes with Number of Items (n_items)
+# ==========================================
+if not df_baseline.empty:
+    print("\n--- Generating First Set of Plots (Baseline Analysis) ---")
 
-if __name__ == "__main__":
-    print("--- Generating Baseline Analysis Plots (Figure 1-3) ---")
-
-    # 5.1 Analysis by Number of Items (n_items)
+    # 1.1 Value vs Items
     plot_comparison(df_baseline, 'n_items', 'Exact_DP_Value', 'Greedy_Value',
-                    'Total Value vs. Number of Items (W=480)', 'Number of Items (n)', 'Total Value',
-                    'Figure_1_value_vs_items.png')
+                    'Total Value vs. Number of Items', 'Number of Items (n)', 'Total Value',
+                    'value_vs_items.png')
 
+    # 1.2 Runtime vs Items
     plot_comparison(df_baseline, 'n_items', 'Exact_Runtime_sec', 'Greedy_Runtime_sec',
-                    'Runtime vs. Number of Items (W=480)', 'Number of Items (n)', 'Runtime (seconds)',
-                    'Figure_2_runtime_vs_items.png')
+                    'Runtime vs. Number of Items', 'Number of Items (n)', 'Runtime (seconds)',
+                    'runtime_vs_items.png')
 
+    # 1.3 Memory vs Items
     plot_comparison(df_baseline, 'n_items', 'Exact_Memory_KB', 'Greedy_Memory_KB',
-                    'Memory Usage vs. Number of Items (W=480)', 'Number of Items (n)', 'Memory Usage (KB)',
-                    'Figure_3_memory_vs_items.png')
+                    'Memory Usage vs. Number of Items', 'Number of Items (n)', 'Memory Usage (KB)',
+                    'memory_vs_items.png')
+    print("✅ First set of plots generated and saved")
 
-    print("\n--- Generating Sensitivity Analysis Plots (Figure 4-7) ---")
+# ==========================================
+# Second set of plots: Changes with Capacity (W)
+# ==========================================
+if not df_sensitivity.empty:
+    print("\n--- Generating Second Set of Plots (Sensitivity Analysis) ---")
 
-    # 5.2 Analysis by Capacity (W)
+    # 2.1 Value vs Capacity
     plot_comparison(df_sensitivity, 'W', 'Exact_DP_Value', 'Greedy_Value',
-                    'Solution Value vs. Capacity (n=200)', 'Capacity (W)', 'Total Value',
-                    'Figure_4_value_vs_capacity.png')
+                    'Solution Value vs. Capacity (W)', 'Capacity (W)', 'Total Value',
+                    'value_vs_capacity.png')
 
+    # 2.2 Runtime vs Capacity
     plot_comparison(df_sensitivity, 'W', 'Exact_Runtime_sec', 'Greedy_Runtime_sec',
-                    'Runtime vs. Capacity (n=200)', 'Capacity (W)', 'Runtime (seconds)',
-                    'Figure_5_runtime_vs_capacity.png')
+                    'Runtime vs. Capacity (W)', 'Capacity (W)', 'Runtime (seconds)',
+                    'runtime_vs_capacity.png')
 
+    # 2.3 Memory vs Capacity
     plot_comparison(df_sensitivity, 'W', 'Exact_Memory_KB', 'Greedy_Memory_KB',
-                    'Memory Usage vs. Capacity (n=200)', 'Capacity (W)', 'Memory Usage (KB)',
-                    'Figure_6_memory_vs_capacity.png')
-    
-    # 5.3 Critical Optimality Gap Plot (Figure 7)
-    plot_optimality_gap(df_sensitivity, 'Figure_7_optimality_gap.png')
-    
-    print("\n✅ All 7 figures have been generated and saved.")
+                    'Memory Usage vs. Capacity (W)', 'Capacity (W)', 'Memory Usage (KB)',
+                    'memory_vs_capacity.png')
+
+    # 2.4 Optimality Gap vs Capacity (New Plot)
+    plot_optimality_gap(df_sensitivity, 'W', 'Optimality_Gap', 20, 
+                        'optimality_gap_vs_capacity.png')
+    print("✅ Second set of plots (including Optimality Gap) generated and saved")
